@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PW Batch Manager</title>
+    <link rel="stylesheet" href="/stylesheets/3d-theme.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 4rem 2rem;
+            text-align: center;
+            gap: 2rem;
+        }
+
+        .hero-badge {
+            padding: 0.6rem 1.6rem;
+            background: rgba(124,58,237,0.15);
+            border: 1px solid rgba(124,58,237,0.4);
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #a78bfa;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .hero-title {
+            font-size: clamp(3.6rem, 6vw, 7.2rem);
+            font-weight: 800;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.8rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 620px;
+        }
+
+        .nav-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 3rem 2.4rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.4s cubic-bezier(0.23,1,0.32,1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.6rem;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gradient-card);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .nav-card:hover::before { opacity: 1; }
+
+        .nav-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--glow-purple), 0 20px 60px rgba(0,0,0,0.5);
+            transform: translateY(-8px) rotateX(3deg);
+        }
+
+        .nav-card-icon {
+            width: 6rem;
+            height: 6rem;
+            border-radius: 16px;
+            background: var(--gradient-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            position: relative;
+            z-index: 1;
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        .nav-card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-card-desc {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 1;
+            line-height: 1.5;
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: rgba(124,58,237,0.12);
+            top: -100px;
+            right: -100px;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: rgba(6,182,212,0.08);
+            bottom: -100px;
+            left: -100px;
+        }
+
+        /* Telegram Modal CSS */
+        .tg-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(4, 4, 15, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+        .tg-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .tg-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .tg-modal-overlay.active .tg-modal {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        .close-btn {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            transition: all 0.3s;
+        }
+        .close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.4);
+            transform: rotate(90deg);
+        }
+        .tg-icon-wrap {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #2AABEE, #229ED9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 4rem;
+            color: white;
+            box-shadow: 0 10px 25px rgba(42, 171, 238, 0.4);
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        .tg-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #2AABEE 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        .tg-desc {
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.5;
+        }
+        .tg-join-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            width: 100%;
+            padding: 1.4rem;
+            background: linear-gradient(135deg, #2AABEE, #229ED9);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(42, 171, 238, 0.2);
+        }
+        .tg-join-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(42, 171, 238, 0.4);
+        }
+    </style>
+    <script src="/javascripts/anti-devtools.js"></script>
+<script src="/javascripts/global.js"></script>
+</head>
+<body>
+    <!-- Telegram Modal -->
+    <div class="tg-modal-overlay" id="tgModal">
+        <div class="tg-modal">
+            <button class="close-btn" id="closeTgModal"><i class="ri-close-line"></i></button>
+            <div class="tg-icon-wrap">
+                <i class="ri-telegram-fill"></i>
+            </div>
+            <h2 class="tg-title">Telegram Community !!</h2>
+            <p class="tg-desc">Join The Channel For Latest Updates. Don't miss future updates!</p>
+            <a href="https://t.me/The_Study_Vault" target="_blank" class="tg-join-btn" id="joinTgBtn">
+                Join Now! <i class="ri-arrow-right-line"></i>
+            </a>
+        </div>
+    </div>
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="page-content">
+        <div class="hero">
+            <div class="hero-badge">✦ PW Batch Manager</div>
+            <img src="/images/logo.jpg" alt="The Study Vault Main Logo" style="width: 250px; height: auto; margin-bottom: -1rem; filter: drop-shadow(0 15px 30px rgba(124,58,237,0.5)); border-radius: 20px;" />
+            <h1 class="hero-title">THE STUDY VAULT</h1>
+            <h3 style="font-size: 2.4rem; font-weight: 700; background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; margin-top:-1rem; text-transform: uppercase; letter-spacing: 2px;">Learn Without Limits</h3>
+            <p class="hero-subtitle" style="margin-top: 0.5rem;">Access your batches, study materials and lectures — all in one immersive 3D experience.</p>
+
+
+            <div class="nav-cards">
+                <a href="/batches" class="nav-card card-3d">
+                    <div class="nav-card-icon">
+                        <i class="ri-book-open-line" style="color:white;"></i>
+                    </div>
+                    <div class="nav-card-title">My Batches</div>
+                    <div class="nav-card-desc">Browse your paid & free enrolled batches</div>
+                </a>
+
+                <a href="/saved/Batches" class="nav-card card-3d">
+                    <div class="nav-card-icon" style="background:linear-gradient(135deg,#06b6d4,#2563eb);">
+                        <i class="ri-save-3-line" style="color:white;"></i>
+                    </div>
+                    <div class="nav-card-title">ALL BATCHES</div>
+                    <div class="nav-card-desc">Access saved content without logging in</div>
+                </a>
+            </div>
+
+            <div class="vault-box" style="margin-top: 3rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 2.5rem; text-align: center; backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 620px; transition: all 0.4s cubic-bezier(0.23,1,0.32,1);">
+                <h2 style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #60a5fa 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; margin-bottom: 0.5rem; text-transform: uppercase;">The Study Vault</h2>
+                <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 2rem;">Made by <strong style="color: #a78bfa;">The Study Hub</strong></p>
+                <a href="https://t.me/The_Study_Vault" target="_blank" class="tg-join-btn" style="max-width: 300px; margin: 0 auto; box-shadow: 0 4px 15px rgba(42, 171, 238, 0.4);">
+                    <i class="ri-telegram-fill" style="margin-right: 0.5rem; font-size: 1.8rem;"></i> Join Telegram Channel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/javascripts/3d-bg.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tgModal = document.getElementById('tgModal');
+            const closeBtn = document.getElementById('closeTgModal');
+            const joinBtn = document.getElementById('joinTgBtn');
+
+            // Show popup only if not joined/dismissed in the last 24 hours
+            const lastDismissed = localStorage.getItem('tg_popup_dismissed');
+            const now = new Date().getTime();
+            
+            // Show after 500ms for smooth load interaction
+            if (!lastDismissed || now - parseInt(lastDismissed) > 24 * 60 * 60 * 1000) {
+                setTimeout(() => {
+                    tgModal.classList.add('active');
+                }, 500);
+            }
+
+            const hideModal = () => {
+                tgModal.classList.remove('active');
+                localStorage.setItem('tg_popup_dismissed', now.toString());
+            };
+
+            closeBtn.addEventListener('click', hideModal);
+            joinBtn.addEventListener('click', hideModal);
+            
+            // Close on overlay click
+            tgModal.addEventListener('click', (e) => {
+                if (e.target === tgModal) hideModal();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PW Player</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e0f;
+    --surface: #1a1a1c;
+    --panel: #222226;
+    --accent: #f47c20;
+    --accent2: #e6b94a;
+    --text: #d4d4d8;
+    --muted: #5a5a60;
+    --border: #2e2e34;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Barlow', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* Title bar */
+  .titlebar {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-cone {
+    width: 28px;
+    height: 28px;
+  }
+
+  .logo-text {
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .title-file {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+  }
+
+  /* URL Bar */
+  .url-bar {
+    width: 100%;
+    max-width: 900px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .url-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    padding: 0 12px;
+    white-space: nowrap;
+    border-right: 1px solid var(--border);
+    height: 36px;
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .url-input-inline {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 0 14px;
+    height: 36px;
+    min-width: 0;
+    transition: background 0.2s;
+  }
+
+  .url-input-inline::placeholder { color: var(--muted); }
+  .url-input-inline:focus { background: rgba(255,255,255,0.03); }
+
+  .url-go-btn {
+    height: 36px;
+    padding: 0 18px;
+    background: var(--accent);
+    border: none;
+    border-left: 1px solid var(--border);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .url-go-btn:hover { background: var(--accent2); color: #000; }
+  .url-go-btn svg { width: 13px; height: 13px; }
+
+  .url-clear-btn {
+    height: 36px;
+    width: 36px;
+    background: none;
+    border: none;
+    border-left: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .url-clear-btn:hover { color: var(--accent); }
+  .url-clear-btn svg { width: 14px; height: 14px; }
+
+  /* Player wrap */
+  .player-wrap {
+    width: 100%;
+    max-width: 900px;
+    background: #000;
+    position: relative;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+
+  .player-wrap video {
+    width: 100%;
+    display: block;
+    max-height: 500px;
+    background: #000;
+  }
+
+  /* Drop overlay */
+  .drop-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: #000;
+    cursor: pointer;
+    transition: background 0.2s;
+    z-index: 10;
+  }
+
+  .drop-overlay.hidden { display: none; }
+
+  .drop-overlay:hover { background: #0d0d0d; }
+
+  .drop-icon {
+    width: 64px;
+    height: 64px;
+    opacity: 0.6;
+  }
+
+  .drop-text {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-align: center;
+    line-height: 2;
+  }
+
+  .drop-text span {
+    color: var(--accent);
+    display: block;
+    font-size: 11px;
+  }
+
+  .drop-overlay.drag-over { background: #111; border: 2px dashed var(--accent); }
+
+  /* Loader and Error Overlay */
+  .message-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    backdrop-filter: blur(2px);
+  }
+  .message-overlay.hidden { display: none; }
+  
+  .loader {
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  .loader.hidden { display: none; }
+
+  .error-box {
+    text-align: center;
+    max-width: 80%;
+    background: var(--surface);
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .error-box.hidden { display: none; }
+  .error-msg {
+    font-family: var(--mono);
+    color: #ef4444;
+    font-size: 15px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .error-detail {
+    font-family: var(--sans);
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+
+  /* Controls panel */
+  .controls {
+    width: 100%;
+    max-width: 900px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Seek bar */
+  .seek-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    min-width: 88px;
+    text-align: right;
+  }
+
+  .seek-wrap {
+    flex: 1;
+    position: relative;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .seek-track {
+    width: 100%;
+    height: 4px;
+    background: var(--panel);
+    border-radius: 2px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .seek-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  input[type=range] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  /* Buttons row */
+  .btn-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .btn:hover { background: var(--panel); border-color: var(--accent); color: var(--accent); }
+  .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .btn svg { width: 16px; height: 16px; pointer-events: none; }
+
+  .btn-play {
+    width: 44px;
+    height: 44px;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+  }
+  .btn-play:hover { background: var(--accent2); border-color: var(--accent2); color: #000; }
+
+  .spacer { flex: 1; }
+
+  /* Volume */
+  .volume-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .volume-slider-wrap {
+    width: 80px;
+    height: 18px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .vol-track {
+    width: 100%;
+    height: 3px;
+    background: var(--panel);
+    border-radius: 2px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .vol-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 100%;
+  }
+
+  /* Speed selector */
+  .speed-select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: none;
+    height: 28px;
+  }
+
+  .speed-select:hover { border-color: var(--accent); }
+
+  /* File open button */
+  .open-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 0 12px;
+    height: 28px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .open-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Status bar */
+  .statusbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 2px;
+  }
+
+  .status-item {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+
+  .status-dot.playing { background: #4ade80; box-shadow: 0 0 6px #4ade8080; }
+
+  /* Fullscreen adjustments */
+  #playerWrap:fullscreen { max-height: 100vh; height: 100vh; border: none; }
+  #playerWrap:fullscreen video { max-height: 100vh; height: 100%; }
+
+  /* Hidden file input */
+  #fileInput { display: none; }
+
+  /* URL Modal */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; }
+  .modal-bg.show { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; width: 90%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; }
+  .modal-title { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 1px; }
+  .modal-input { background: var(--panel); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 10px 12px; border-radius: 6px; outline: none; width: 100%; transition: border-color: 0.2s; }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-hint { font-size: 10px; color: var(--muted); font-family: var(--mono); line-height: 1.7; }
+  .modal-hint b { color: var(--accent2); }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+  .modal-cancel { background: none; border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+  .modal-cancel:hover { border-color: var(--muted); color: var(--text); }
+  .modal-ok { background: var(--accent); border: none; color: #fff; font-family: var(--mono); font-size: 11px; padding: 8px 20px; border-radius: 6px; cursor: pointer; letter-spacing: 1px; }
+  .modal-ok:hover { background: var(--accent2); color: #000; }
+  
+  /* Reuse modal-ok style for retry button */
+  #retryBtn { background: var(--accent); border: none; color: #fff; font-family: var(--mono); font-size: 11px; padding: 8px 20px; border-radius: 6px; cursor: pointer; letter-spacing: 1px; }
+  #retryBtn:hover { background: var(--accent2); color: #000; }
+
+  /* Subtitle track toggle */
+  .subtitle-info {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+</style>
+    <script src="/javascripts/anti-devtools.js"></script>
+<script src="/javascripts/global.js"></script>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="logo">
+    <svg class="logo-cone" viewBox="0 0 28 28" fill="none">
+      <polygon points="14,2 26,24 2,24" fill="#f47c20"/>
+      <polygon points="14,6 22,22 6,22" fill="#e6b94a" opacity="0.5"/>
+      <rect x="9" y="24" width="10" height="3" rx="1" fill="#f47c20"/>
+    </svg>
+    <span class="logo-text">VPLAYER</span>
+  </div>
+  <div class="title-file" id="titleFile">No media loaded</div>
+</div>
+
+<div class="url-bar">
+  <div class="url-label">🔗 URL</div>
+  <input class="url-input-inline" id="urlBarInput" type="text" placeholder="Paste video link here and press ▶" spellcheck="false" autocomplete="off">
+  <button class="url-clear-btn" id="urlBarClear" title="Clear">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+  </button>
+  <button class="url-go-btn" id="urlBarGo" title="Play URL">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    PLAY
+  </button>
+</div>
+
+<div class="player-wrap" id="playerWrap">
+  <video id="videoEl" playsinline></video>
+
+  <!-- Drag overlay -->
+  <div class="drop-overlay" id="dropOverlay">
+    <svg class="drop-icon" viewBox="0 0 64 64" fill="none" stroke="#f47c20" stroke-width="2">
+      <rect x="8" y="12" width="48" height="36" rx="4"/>
+      <polygon points="26,22 26,38 42,30" fill="#f47c20" stroke="none"/>
+    </svg>
+    <div class="drop-text">
+      DROP A VIDEO FILE HERE
+      <span>or click to browse · mp4, webm, ogg, m3u8</span>
+    </div>
+  </div>
+
+  <!-- Loading / Error Message overlay -->
+  <div class="message-overlay hidden" id="messageOverlay">
+    <div class="loader hidden" id="loader"></div>
+    <div class="error-box hidden" id="errorBox">
+      <div class="error-msg" id="errorMsg">Error</div>
+      <div class="error-detail" id="errorDetail">Details...</div>
+      <button id="retryBtn" class="mt-2" style="margin-top: 10px;">RETRY</button>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <!-- Seek row -->
+  <div class="seek-row">
+    <div class="time" id="timeCurrent">0:00:00</div>
+    <div class="seek-wrap" id="seekWrap">
+      <div class="seek-track"><div class="seek-fill" id="seekFill"></div></div>
+      <input type="range" id="seekBar" min="0" max="1000" value="0" step="1">
+    </div>
+    <div class="time" id="timeDuration">0:00:00</div>
+  </div>
+
+  <!-- Buttons row -->
+  <div class="btn-row">
+    <button class="btn" id="btnSkipBack" title="Skip -10s">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+    </button>
+    <button class="btn btn-play" id="btnPlay" title="Play/Pause">
+      <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button class="btn" id="btnSkipFwd" title="Skip +10s">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 6h-2v12h2zm-3.5 6L6 6v12z"/></svg>
+    </button>
+    <button class="btn" id="btnStop" title="Stop">
+      <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+    </button>
+
+    <div class="volume-group">
+      <button class="btn" id="btnMute" title="Mute">
+        <svg id="volIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+      </button>
+      <div class="volume-slider-wrap">
+        <div class="vol-track"><div class="vol-fill" id="volFill"></div></div>
+        <input type="range" id="volBar" min="0" max="100" value="100" step="1">
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <select class="speed-select" id="speedSelect" title="Playback speed">
+      <option value="0.25">0.25x</option>
+      <option value="0.5">0.5x</option>
+      <option value="0.75">0.75x</option>
+      <option value="1" selected>1x</option>
+      <option value="1.25">1.25x</option>
+      <option value="1.5">1.5x</option>
+      <option value="2">2x</option>
+    </select>
+
+    <button class="btn" id="btnLoop" title="Loop">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+    </button>
+
+    <button class="btn" id="btnFs" title="Fullscreen">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    </button>
+
+    <button class="open-btn" id="btnOpen">OPEN FILE</button>
+    <button class="open-btn" id="btnUrl">OPEN URL</button>
+    <input type="file" id="fileInput" accept="video/*,.m3u8">
+  </div>
+
+  <div class="statusbar">
+    <div class="status-item"><div class="status-dot" id="statusDot"></div><span id="statusText">Stopped</span></div>
+    <div class="status-item" id="resInfo">—</div>
+    <div class="status-item" id="fpsInfo"></div>
+    <div class="subtitle-info" id="loopInfo"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="urlModal">
+  <div class="modal">
+    <div class="modal-title">▶ OPEN NETWORK STREAM</div>
+    <input class="modal-input" id="urlInput" type="text" placeholder="https://example.com/video.m3u8" spellcheck="false">
+    <div class="modal-hint">
+      Paste a direct video URL.<br>
+      <b>Works with:</b> .mp4 · .webm · .ogg · .m3u8 (HLS)<br>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="urlCancel">CANCEL</button>
+      <button class="modal-ok" id="urlOk">PLAY</button>
+    </div>
+  </div>
+</div>
+
+<script src="/javascripts/watch.js"></script>
+</body>
+</html>

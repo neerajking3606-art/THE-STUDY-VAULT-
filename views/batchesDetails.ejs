@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= specificeBatch.data.name %></title>
+    <link rel="stylesheet" href="/stylesheets/3d-theme.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+        .subject-card {
+            display: flex;
+            align-items: center;
+            gap: 1.6rem;
+            padding: 1.6rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            border-radius: 16px;
+        }
+
+        .subject-img {
+            width: 7rem;
+            height: 7rem;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .subject-info { flex: 1; }
+
+        .subject-name {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        .subject-meta {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .subject-arrow {
+            color: var(--accent-purple);
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .batch-hero {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .batch-hero-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .batch-hero-meta {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-chip {
+            font-size: 1.2rem;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .subjects-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            padding: 0 3rem 3rem;
+        }
+    </style>
+    <script src="/javascripts/anti-devtools.js"></script>
+<script src="/javascripts/global.js"></script>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="page-content">
+        <header class="site-header">
+            <a href="/batches" class="back-btn"><i class="ri-arrow-left-line"></i></a>
+            <h1><%= specificeBatch.data.name.length > 35 ? specificeBatch.data.name.slice(0,35)+'…' : specificeBatch.data.name %></h1>
+        </header>
+
+        <div class="batch-hero">
+            <div class="batch-hero-title"><%= specificeBatch.data.name %></div>
+            <div class="batch-hero-meta">
+                <% if (specificeBatch.data.byName) { %>
+                <span class="meta-chip"><i class="ri-user-line"></i> <%= specificeBatch.data.byName %></span>
+                <% } %>
+                <% if (specificeBatch.data.language) { %>
+                <span class="meta-chip"><i class="ri-translate-2"></i> <%= specificeBatch.data.language %></span>
+                <% } %>
+                <span class="meta-chip"><i class="ri-book-2-line"></i> <%= specificeBatch.data.subjects.length %> Subjects</span>
+            </div>
+        </div>
+
+        <div class="glow-divider"></div>
+
+        <% if (specificeBatch.data.subjects.length > 0) { %>
+        <div class="subjects-list" style="margin-top: 2rem;">
+            <% specificeBatch.data.subjects.forEach(subject => { %>
+            <a href="/batches/<%= batchNameSlug %>/subject/<%= subject.slug %>/topics" class="card-3d subject-card">
+                <% if (subject.imageId) { %>
+                <img class="subject-img" src="<%= subject.imageId %>" alt="<%= subject.subject %>">
+                <% } else { %>
+                <div class="subject-img" style="background: var(--gradient-main); display:flex; align-items:center; justify-content:center;">
+                    <i class="ri-book-open-line" style="font-size:2.4rem; color:white;"></i>
+                </div>
+                <% } %>
+                <div class="subject-info">
+                    <div class="subject-name">
+                        <%= subject.subject.length > 30 ? subject.subject.slice(0,30)+'…' : subject.subject %>
+                    </div>
+                    <div class="subject-meta">
+                        <i class="ri-chapters-line"></i>
+                        <%= subject.tagCount %> Chapters
+                    </div>
+                </div>
+                <i class="ri-arrow-right-s-line subject-arrow"></i>
+            </a>
+            <% }); %>
+        </div>
+        <% } else { %>
+        <div style="text-align:center; padding:6rem 2rem; color:var(--text-muted); font-size:1.6rem;">
+            <i class="ri-inbox-2-line" style="font-size:4rem; display:block; margin-bottom:1rem;"></i>
+            No subjects found.
+        </div>
+        <% } %>
+    </div>
+    <script src="/javascripts/3d-bg.js"></script>
+</body>
+</html>

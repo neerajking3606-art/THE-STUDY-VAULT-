@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Batches</title>
+    <link rel="stylesheet" href="/stylesheets/3d-theme.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+        .section-label {
+            padding: 0 3rem;
+            margin-top: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        .section-label span {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .batch-card {
+            border-radius: 20px;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .batch-card-img {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .batch-card:hover .batch-card-img {
+            transform: scale(1.05);
+        }
+
+        .batch-card-img-wrap {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .batch-card-img-wrap::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(to top, rgba(4,4,15,0.9), transparent);
+        }
+
+        .batch-card-body {
+            padding: 1.6rem;
+        }
+
+        .batch-card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .batch-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.6rem;
+        }
+
+        .study-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.8rem 1.6rem;
+            background: var(--gradient-main);
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .study-btn:hover {
+            box-shadow: var(--glow-purple);
+        }
+
+        .tag {
+            font-size: 1.1rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            background: rgba(124,58,237,0.12);
+            border: 1px solid rgba(124,58,237,0.25);
+            color: #a78bfa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 6rem 2rem;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.8rem 1.6rem;
+            border: 1px solid rgba(239,68,68,0.4);
+            border-radius: 8px;
+            color: #f87171;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239,68,68,0.1);
+            box-shadow: 0 0 20px rgba(239,68,68,0.2);
+        }
+    </style>
+    <script src="/javascripts/anti-devtools.js"></script>
+<script src="/javascripts/global.js"></script>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="page-content">
+        <header class="site-header">
+            <a href="/" class="back-btn"><i class="ri-arrow-left-line"></i></a>
+            <h1>My Batches</h1>
+            <a href="/logout" class="logout-btn"><i class="ri-logout-box-line"></i> Logout</a>
+        </header>
+
+        <% if (paidBatch && paidBatch.data && paidBatch.data.length >= 1) { %>
+        <div class="section-label"><span>Paid Batches</span></div>
+        <div class="cards-grid">
+            <% paidBatch.data.forEach(course => { %>
+            <a href="/batches/<%= course.slug %>/details" class="card-3d batch-card">
+                <div class="batch-card-img-wrap">
+                    <img class="batch-card-img" src="<%= course.previewImage %>" alt="<%= course.name %>" loading="lazy">
+                </div>
+                <div class="batch-card-body">
+                    <div class="batch-card-title">
+                        <%= course.name.length > 55 ? course.name.slice(0, 55) + '…' : course.name %>
+                    </div>
+                    <div class="batch-card-footer">
+                        <span class="tag"><i class="ri-vip-crown-line"></i> Paid</span>
+                        <span class="study-btn">Study <i class="ri-arrow-right-line"></i></span>
+                    </div>
+                </div>
+            </a>
+            <% }); %>
+        </div>
+        <% } %>
+
+        <% if (freeBatch && freeBatch.data && freeBatch.data.length >= 1) { %>
+        <div class="section-label" style="margin-top: 4rem;"><span>Free Batches</span></div>
+        <div class="cards-grid">
+            <% freeBatch.data.forEach(course => { %>
+            <a href="/batches/<%= course.slug %>/details" class="card-3d batch-card">
+                <div class="batch-card-img-wrap">
+                    <img class="batch-card-img" src="<%= course.previewImage %>" alt="<%= course.name %>" loading="lazy">
+                </div>
+                <div class="batch-card-body">
+                    <div class="batch-card-title">
+                        <%= course.name.length > 55 ? course.name.slice(0, 55) + '…' : course.name %>
+                    </div>
+                    <div class="batch-card-footer">
+                        <span class="tag" style="color:#34d399; background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.25);">
+                            <i class="ri-shield-check-line"></i> Free
+                        </span>
+                        <span class="study-btn">Study <i class="ri-arrow-right-line"></i></span>
+                    </div>
+                </div>
+            </a>
+            <% }); %>
+        </div>
+        <% } %>
+
+        <% if ((!paidBatch || !paidBatch.data || paidBatch.data.length === 0) && (!freeBatch || !freeBatch.data || freeBatch.data.length === 0)) { %>
+        <div class="empty-state">
+            <% if ((paidBatch && paidBatch.error) || (freeBatch && freeBatch.error)) { %>
+                <i class="ri-error-warning-line" style="font-size:4rem; display:block; margin-bottom:1rem; color:#f87171;"></i>
+                <p style="color:#f87171; font-size:1.6rem; margin-bottom:1rem;">PW API Error — Your token may have expired.</p>
+                <a href="/logout" class="btn-primary" style="margin: 0 auto;">
+                    <i class="ri-refresh-line"></i> Logout & Re-login
+                </a>
+            <% } else { %>
+                <i class="ri-inbox-2-line" style="font-size:4rem; display:block; margin-bottom:1rem;"></i>
+                <p style="font-size:1.6rem;">No batches found in your account.</p>
+                <p style="font-size:1.3rem; color: var(--text-muted); margin-top:0.8rem;">Make sure you're enrolled in some batches on PW.</p>
+            <% } %>
+        </div>
+        <% } %>
+        <br><br>
+    </div>
+
+    <script src="/javascripts/3d-bg.js"></script>
+</body>
+</html>

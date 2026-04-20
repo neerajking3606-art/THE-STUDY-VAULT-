@@ -1,0 +1,29 @@
+
+> pw-webapp@0.0.0 start
+> node app.js
+
+[1G[0KMongoDB Connection FAILED  MongoParseError: Invalid scheme, expected connection string to start with "mongodb://" or "mongodb+srv://"
+    at new ConnectionString [90m(/home/runner/workspace/[39mnode_modules/[4mmongodb-connection-string-url[24m/lib/index.js:86:19[90m)[39m
+    at parseOptions [90m(/home/runner/workspace/[39mnode_modules/[4mmongodb[24m/lib/connection_string.js:192:17[90m)[39m
+    at new MongoClient [90m(/home/runner/workspace/[39mnode_modules/[4mmongodb[24m/lib/mongo_client.js:52:63[90m)[39m
+    at NativeConnection.createClient [90m(/home/runner/workspace/[39mnode_modules/[4mmongoose[24m/lib/drivers/node-mongodb-native/connection.js:293:14[90m)[39m
+    at NativeConnection.openUri [90m(/home/runner/workspace/[39mnode_modules/[4mmongoose[24m/lib/connection.js:801:34[90m)[39m
+    at Mongoose.connect [90m(/home/runner/workspace/[39mnode_modules/[4mmongoose[24m/lib/mongoose.js:414:15[90m)[39m
+    at [90mfile:///home/runner/workspace/[39mmodels/connectDB.js:6:18
+    at [90mfile:///home/runner/workspace/[39mmodels/connectDB.js:9:3
+[90m    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)[39m
+[90m    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)[39m
+Server running on port 5000
+[0mGET / [36m304 [0m10.810 ms - -[0m
+[0mGET /stylesheets/3d-theme.css [36m304 [0m1.154 ms - -[0m
+[0mGET /javascripts/3d-bg.js [36m304 [0m0.572 ms - -[0m
+[0mGET / [32m200 [0m1.669 ms - 5603[0m
+[0mGET /javascripts/3d-bg.js [32m200 [0m2.952 ms - 5262[0m
+[0mGET /stylesheets/3d-theme.css [32m200 [0m4.942 ms - 5625[0m
+[0mGET /favicon.ico [33m404 [0m2.209 ms - 930[0m
+[0mGET / [36m304 [0m1.147 ms - -[0m
+[0mGET /stylesheets/3d-theme.css [36m304 [0m0.549 ms - -[0m
+[0mGET /javascripts/3d-bg.js [36m304 [0m0.560 ms - -[0m
+[0mGET / [36m304 [0m1.033 ms - -[0m
+[0mGET /stylesheets/3d-theme.css [36m304 [0m0.601 ms - -[0m
+[0mGET /javascripts/3d-bg.js [36m304 [0m0.440 ms - -[0m

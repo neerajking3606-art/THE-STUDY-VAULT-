@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapters</title>
+    <link rel="stylesheet" href="/stylesheets/3d-theme.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+        .chapters-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            padding: 2.4rem 3rem;
+        }
+
+        .chapter-card {
+            display: flex;
+            align-items: center;
+            gap: 1.6rem;
+            padding: 1.8rem 2rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            border-radius: 14px;
+        }
+
+        .chapter-num {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 10px;
+            background: var(--gradient-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .chapter-info { flex: 1; }
+
+        .chapter-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            line-height: 1.4;
+        }
+
+        .chapter-meta {
+            display: flex;
+            gap: 1.2rem;
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+
+        .chapter-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .chapter-arrow {
+            color: var(--accent-purple);
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .search-bar {
+            padding: 1.2rem 3rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1.2rem 1.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-purple);
+            box-shadow: var(--glow-purple);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+    </style>
+    <script src="/javascripts/anti-devtools.js"></script>
+<script src="/javascripts/global.js"></script>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="page-content">
+        <header class="site-header">
+            <a href="/batches/<%= batchNameSlug %>/details" class="back-btn"><i class="ri-arrow-left-line"></i></a>
+            <h1><%= subjectListDetails.data.subject %></h1>
+        </header>
+
+        <div class="search-bar">
+            <input class="search-input" type="text" id="searchInput" placeholder="Search chapters…">
+        </div>
+
+        <% if (subjectListDetails.data.length > 0) { %>
+        <div class="chapters-list" id="chaptersList">
+            <% subjectListDetails.data.forEach((course, idx) => { %>
+            <a href="/batches/<%= batchNameSlug %>/subject/<%= subjectSlug %>/contents/<%= course.slug %>" class="card-3d chapter-card" data-name="<%= course.name.toLowerCase() %>">
+                <div class="chapter-num"><%= idx + 1 %></div>
+                <div class="chapter-info">
+                    <div class="chapter-name">
+                        <%= course.name.length > 55 ? course.name.slice(0,55)+'…' : course.name %>
+                    </div>
+                    <div class="chapter-meta">
+                        <span><i class="ri-video-line"></i> <%= course.videos || 0 %> Videos</span>
+                        <span><i class="ri-file-text-line"></i> <%= course.notes || 0 %> Notes</span>
+                        <span><i class="ri-question-line"></i> <%= course.exercises || 0 %> Exercises</span>
+                    </div>
+                </div>
+                <i class="ri-arrow-right-s-line chapter-arrow"></i>
+            </a>
+            <% }); %>
+        </div>
+        <% } else { %>
+        <div style="text-align:center; padding:6rem 2rem; color:var(--text-muted); font-size:1.6rem;">
+            <i class="ri-inbox-2-line" style="font-size:4rem; display:block; margin-bottom:1rem;"></i>
+            No chapters found.
+        </div>
+        <% } %>
+    </div>
+
+    <script src="/javascripts/3d-bg.js"></script>
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const q = this.value.toLowerCase();
+                document.querySelectorAll('.chapter-card').forEach(card => {
+                    const name = card.getAttribute('data-name') || '';
+                    card.style.display = name.includes(q) ? '' : 'none';
+                });
+            });
+        }
+    </script>
+</body>
+</html>

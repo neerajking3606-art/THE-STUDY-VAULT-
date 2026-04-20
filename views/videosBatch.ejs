@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contents</title>
+    <link rel="stylesheet" href="/stylesheets/3d-theme.css">
+    <link rel="stylesheet" href="/stylesheets/videosBatch3d.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="/javascripts/anti-devtools.js"></script>
+<script src="/javascripts/global.js"></script>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <script>
+        const PW_TOKEN = '<%- typeof token !== "undefined" ? token : "" %>';
+        const PW_PARENT_ID = '<%- typeof parentId !== "undefined" ? parentId : "" %>';
+    </script>
+
+    <div class="page-content">
+        <header class="site-header">
+            <a href="/batches/<%= batchNameSlug %>/subject/<%= subjectSlug %>/topics" class="back-btn">
+                <i class="ri-arrow-left-line"></i>
+            </a>
+            <h1><%= videosBatch.name || 'Contents' %></h1>
+        </header>
+
+        <div class="tab-bar">
+            <button id="lectures" class="tab-btn active" data-tab="lectures">
+                <i class="ri-video-line"></i> Lectures
+            </button>
+            <button id="notes" class="tab-btn" data-tab="notes">
+                <i class="ri-file-text-line"></i> Notes
+            </button>
+            <button id="dpp" class="tab-btn" data-tab="dpp">
+                <i class="ri-question-answer-line"></i> DPP
+            </button>
+            <button id="dppVideos" class="tab-btn" data-tab="dppVideos">
+                <i class="ri-movie-line"></i> DPP Solution Videos
+            </button>
+        </div>
+
+        <div id="content">
+            <div id="lectures-content"
+                batchNameSlug="<%= batchNameSlug %>"
+                subjectSlug="<%= subjectSlug %>"
+                chapterSlug="<%= chapterSlug %>">
+                <div class="cards-grid">
+                    <% if (videosBatch.data.length > 0) { %>
+                        <% videosBatch.data.forEach(video => { %>
+                        <div class="card-3d video-card"
+                            video-url="<%= video.videoDetails.videoUrl || video.videoDetails.embedCode %>"
+                            data-has-url="<%= !!video.videoDetails.videoUrl %>"
+                            batch-slug="<%= batchNameSlug %>"
+                            onclick="handleVideoClick(this)">
+                            <div class="video-thumb-wrap">
+                                <img class="video-thumb" src="<%= video.videoDetails.image %>" alt="Thumbnail" loading="lazy">
+                                <div class="play-overlay">
+                                    <div class="play-btn-circle">
+                                        <i class="ri-play-fill"></i>
+                                    </div>
+                                </div>
+                                <div class="duration-badge">
+                                    <i class="ri-time-line"></i> <%= video.videoDetails.duration %>
+                                </div>
+                            </div>
+                            <div class="video-info">
+                                <div class="video-date">
+                                    <i class="ri-calendar-line"></i> <%= video.date %>
+                                </div>
+                                <p class="video-title">
+                                    <%= video.videoDetails.name.length > 70 ? video.videoDetails.name.slice(0,70)+'…' : video.videoDetails.name %>
+                                </p>
+                                <% if (video.videoDetails.videoUrl) { %>
+                                <% const parts = video.videoDetails.videoUrl.split('/'); const videoId = parts[parts.length - 2]; %>
+                                <div class="video-actions" onclick="event.stopPropagation()">
+                                    <div class="action-btn vlc-btn" onclick="sendVideoUrl('<%= video.videoDetails.videoUrl %>', '<%= batchNameSlug %>')">
+                                        <i class="ri-play-circle-line"></i> Play
+                                    </div>
+                                    <div class="action-btn dl-btn" onclick="copyDownloadLink('<%= videoId %>')">
+                                        <i class="ri-download-2-line"></i> 1DM
+                                    </div>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-content">
+                            <i class="ri-video-off-line"></i>
+                            <p>No lectures available yet</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div id="notes-content"
+                batchNameSlug="<%= batchNameSlug %>"
+                subjectSlug="<%= subjectSlug %>"
+                chapterSlug="<%= chapterSlug %>"
+                style="display:none;">
+                <div class="cards-grid pdf-grid"></div>
+            </div>
+
+            <div id="dpp-content"
+                batchNameSlug="<%= batchNameSlug %>"
+                subjectSlug="<%= subjectSlug %>"
+                chapterSlug="<%= chapterSlug %>"
+                style="display:none;">
+                <div class="cards-grid pdf-grid"></div>
+            </div>
+
+            <div id="dppVideos-content"
+                batchNameSlug="<%= batchNameSlug %>"
+                subjectSlug="<%= subjectSlug %>"
+                chapterSlug="<%= chapterSlug %>"
+                style="display:none;">
+                <div class="cards-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/javascripts/3d-bg.js"></script>
+    <script src="/javascripts/videosBatch.js"></script>
+</body>
+</html>
