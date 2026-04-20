@@ -27,8 +27,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(async (req, res, next) => {
-  await connectDB();
-  next();
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Database connection failed during request:", error.message);
+    // Alternatively return a generic 500 error view instead of raw JSON if you prefer
+    res.status(500).json({ error: "Database connection error. Please try again later." });
+  }
 });
 
 app.use('/', indexRouter);
@@ -69,13 +75,7 @@ let counter = 0;
 app.use(cors());
 const port = process.env.PORT || 5000
 
-const server = app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on port ${port}`);
-
-  // callURL();
-  // if(counter<10){
-  //   setInterval(callURL, 5 * 60 * 1000);
-  // }
-});
+// In a Vercel Serverless environment, we do NOT start the server manually using app.listen.
+// Vercel routes HTTP requests to the exported app object directly.
 
 export default app;
