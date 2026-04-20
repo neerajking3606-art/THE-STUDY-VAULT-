@@ -12,7 +12,7 @@ import fetch from 'node-fetch';
 import indexRouter from './routes/index.js';
 import apiRouter from './routes/api.js';
 
-import './models/connectDB.js'
+import connectDB from './models/connectDB.js';
 var app = express();
 
 // view engine setup
@@ -25,6 +25,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/api/v1/', apiRouter);
