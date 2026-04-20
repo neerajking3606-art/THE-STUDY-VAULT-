@@ -2,13 +2,19 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv';
 dotenv.config();
 
-; (async () => {
+const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return mongoose.connection;
+  }
+
   try {
     await mongoose.connect(`${process.env.MONGODB_URL}`, {
       serverSelectionTimeoutMS: 5000,
-      family: 4
+      family: 4,
+      maxPoolSize: 10
     });
     console.log('MongoDB Connected successfully.');
+    return mongoose.connection;
   } catch (err) {
     console.log('\n=============================================');
     console.log('⚠️  STARTUP WARNING: MongoDB Connection FAILED');
@@ -22,4 +28,6 @@ dotenv.config();
     }
     console.log('=============================================\n');
   }
-})();
+};
+
+export default connectDB;
